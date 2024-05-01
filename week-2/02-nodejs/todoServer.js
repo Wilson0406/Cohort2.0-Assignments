@@ -39,11 +39,141 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require("fs");
+const app = express();
+
+// let todos = fs.readFileSync("todos.json", "utf-8");
+// app.use(bodyParser.json());
+// let todosJ = JSON.parse(todos);
+
+// app.get("/todos", (req,res) => {
+//   // todos = JSON.stringify(todosJ);
+//   // fs.writeFileSync("week-2/02-nodejs/todos.json", todos, "utf-8");
+//   res.status(200).send(todosJ);
+// })
+
+// app.get("/todos/:id", (req,res) => {
+//   let found = false;
+//   for(let i = 0; i < todosJ.length; i++) {
+//     if(todosJ[i]["id"] == req.params.id) {
+//       found = true;
+//       res.status(200).send(todosJ[i]);
+//     }
+//   }
+//   if(!found) {
+//     res.status(404).send("TODO not found!");
+//   }
+// })
+
+// app.post("/todos", (req,res) => {
+//   title = req.body.title;
+//   completed = req.body.completed;
+//   description = req.body.description;
+//   todosJ.push({
+//     id: todosJ.length + 1,
+//     title: title,
+//     completed: completed,
+//     description: description,
+//   })
+//   todos = JSON.stringify(todosJ);
+//   fs.writeFileSync("todos.json", todos, "utf-8");
+//   res.status(200).send("Created TODO.")
+// })
+
+// app.put("/todos/:id", (req, res) => {
+//   let id = req.params.id;
+//   let description = req.body.description;
+//   let title = req.body.title;
+//   let completed = req.body.completed;
+//   let found = false;
+//   for(let i = 0; i < todosJ.length; i++) {
+//     if(todosJ[i]["id"] == id) {
+//       found = true;
+//       todosJ[i]["title"] = title;
+//       todosJ[i]["description"] = description;
+//       todosJ[i]["completed"] = completed;
+//       todos = JSON.stringify(todosJ);
+//       fs.writeFileSync("todos.json", todos, "utf-8");
+//       res.status(200).send("TODO updated");
+//     }
+//   }
+//   if(!found) {
+//     res.status(404).send("TODO not found.");
+//   } 
+// })
+
+// app.delete("/todos/:id", (req, res) => {
+//   let id = req.params.id;
+//   let found = false;
+//   for(let i = 0; i < todosJ.length; i++) {
+//     if(todosJ[i]["id"] == id) {
+//       found = true;
+//       todosJ.splice(i, 1);
+//       todos = JSON.stringify(todosJ);
+//       fs.writeFileSync("todos.json", todos, "utf-8");
+//       res.status(200).send("TODO found and deleted.");
+//     }
+//   }
+//   if(!found) {
+//     res.status(404).send("TODO not found.");
+//   }
+// })
+
+app.use(bodyParser.json());
+let todosJ = []
+
+app.get("/todos", (req,res) => {
+  res.json(todosJ);
+})
+
+app.get("/todos/:id", (req,res) => {
+  const todo = todosJ.find(t => t.id === parseInt(req.params.id));
+  if(!todo) {
+    res.status(404).send("TODO not found!");
+  } else {
+      res.status(200).json(todo);
+  }
+})
+
+app.post("/todos", (req,res) => {
+  title = req.body.title;
+  // completed = req.body.completed;
+  description = req.body.description;
+  const newTodo = {
+    id: todosJ.length + 1,
+    title: title,
+    description: description
+  }
+  todosJ.push(newTodo)
+  res.status(201).json(newTodo)
+})
+
+app.put("/todos/:id", (req, res) => {
+  let id = todosJ.findIndex(t => t.id === parseInt(req.params.id));
+  if(id == -1) {
+    res.status(404).send("TODO not found.");
+  } else {
+    todosJ[id].title = req.body.title;
+    todosJ[id].description = req.body.description;
+    res.send(200).json(todosJ[id]);
+  }
+})
+
+app.delete("/todos/:id", (req, res) => {
+  const id = todosJ.findIndex(t => t.id === parseInt(req.params.id));
+  if(id == -1) {
+    res.status(404).send("TODO not found.");
+  } else {
+    todosJ.splice(id, 1);
+    res.status(200).send("TODO deleted.");
+  }
+})
+
+app.use((req, res, next) => {
+  res.status(404).send();
+});
+
+// app.listen(3000);
+module.exports = app;
